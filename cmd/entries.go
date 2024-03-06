@@ -53,14 +53,14 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		type Entry struct {
+		type Response struct {
 			Date    string
 			Seconds int64
 		}
 
-		var entryList []Entry
+		var entryList []Response
 		for date, seconds := range entries {
-			entryList = append(entryList, Entry{Date: date, Seconds: seconds})
+			entryList = append(entryList, Response{Date: date, Seconds: seconds})
 		}
 		sort.Slice(entryList, func(i, j int) bool {
 			return entryList[i].Date < entryList[j].Date
