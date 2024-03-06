@@ -74,12 +74,29 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
+		loc, err := time.LoadLocation("Local")
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
 		var totalDuration time.Duration
 		for _, entry := range entries {
 			seconds, _ := strconv.ParseInt(entry.Duration, 10, 64)
-			duration := time.Duration(seconds) * time.Second
-			totalDuration += duration
-			fmt.Printf("%d %s %s\n", entry.ID, duration.String(), entry.Name)
+			if seconds == 0 && entry.StartTime == entry.EndTime {
+				givenTime, err := time.ParseInLocation("2006-01-02 15:04:05", entry.Date+" "+entry.StartTime, loc)
+				if err != nil {
+					fmt.Println("Error:", err)
+					return
+				}
+				elapsedTime := time.Since(givenTime)
+				totalDuration += elapsedTime.Round(time.Second)
+				fmt.Printf("%d %s %s\n", entry.ID, elapsedTime.Round(time.Second).String(), entry.Name)
+			} else {
+				duration := time.Duration(seconds) * time.Second
+				totalDuration += duration
+				fmt.Printf("%d %s %s\n", entry.ID, duration.String(), entry.Name)
+			}
 		}
 		fmt.Printf("%sTotal: %s%s\n", "\033[1m", totalDuration, "\033[0m")
 	},
