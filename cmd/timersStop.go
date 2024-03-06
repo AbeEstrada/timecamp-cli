@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var TimerID string
+var StopTimerID string
 
 var timersStopCmd = &cobra.Command{
 	Use:   "stop",
@@ -25,23 +25,24 @@ var timersStopCmd = &cobra.Command{
 
 		url := "https://app.timecamp.com/third_party/api/timer"
 
-		type Payload struct {
-			Action string `json:"action"`
-			TaskID string `json:"task_id"`
+		payload := strings.NewReader("{\"action\":\"stop\"}")
+		if StopTimerID != "" {
+			type Payload struct {
+				Action string `json:"action"`
+				TaskID string `json:"task_id"`
+			}
+			payloadStruct := Payload{
+				Action: "stop",
+				TaskID: StopTimerID,
+			}
+			payloadJSON, err := json.Marshal(payloadStruct)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			payload = strings.NewReader(string(payloadJSON))
+			StopTimerID = ""
 		}
-
-		payloadStruct := Payload{
-			Action: "stop",
-			TaskID: TimerID,
-		}
-
-		payloadJSON, err := json.Marshal(payloadStruct)
-		if err != nil {
-			fmt.Println("Error:", err)
-			return
-		}
-
-		payload := strings.NewReader(string(payloadJSON))
 
 		req, _ := http.NewRequest("POST", url, payload)
 
@@ -70,6 +71,5 @@ var timersStopCmd = &cobra.Command{
 
 func init() {
 	timersCmd.AddCommand(timersStopCmd)
-	timersStopCmd.Flags().StringVarP(&TimerID, "id", "i", "", "Timer ID (required)")
-	timersStopCmd.MarkFlagRequired("id")
+	timersStopCmd.Flags().StringVarP(&StopTimerID, "id", "i", "", "Timer ID (required)")
 }
