@@ -12,11 +12,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Entry struct {
-	Date    string
-	Seconds int64
-}
-
 var entriesCmd = &cobra.Command{
 	Use:   "entries",
 	Short: "Get entries for this week",
@@ -40,12 +35,27 @@ var entriesCmd = &cobra.Command{
 
 		defer res.Body.Close()
 		body, _ := io.ReadAll(res.Body)
+		if res.StatusCode != http.StatusOK {
+			var errorMessage ErrorMessage
+			err := json.Unmarshal([]byte(body), &errorMessage)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			fmt.Println("Error:", errorMessage.Message)
+			return
+		}
 
 		var entries map[string]int64
 		err := json.Unmarshal(body, &entries)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
+		}
+
+		type Entry struct {
+			Date    string
+			Seconds int64
 		}
 
 		var entryList []Entry
