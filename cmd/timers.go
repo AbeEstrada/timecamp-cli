@@ -69,6 +69,7 @@ var timersCmd = &cobra.Command{
 			return
 		}
 
+		var totalDuration time.Duration
 		for _, timer := range timers {
 			fmt.Printf("Timer ID: %s\n", timer.TimerID)
 			fmt.Printf("Started At: %s\n", timer.StartedAt)
@@ -78,12 +79,15 @@ var timersCmd = &cobra.Command{
 				return
 			}
 			elapsedTime := time.Since(givenTime)
+			totalDuration += elapsedTime.Round(time.Second)
 			fmt.Println(elapsedTime.Round(time.Second).String())
 
 			if len(timers) > 1 {
 				fmt.Println("---")
 			}
 		}
+
+		fmt.Printf("%sTotal: %s%s\n", "\033[1m", totalDuration.String(), "\033[0m")
 	},
 }
 
