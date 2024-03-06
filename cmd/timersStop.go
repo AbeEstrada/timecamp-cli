@@ -1,0 +1,65 @@
+package cmd
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"strings"
+
+	"github.com/spf13/cobra"
+)
+
+var TimerID string
+
+var timersStopCmd = &cobra.Command{
+	Use:   "stop",
+	Short: "Stop a timer",
+	Run: func(cmd *cobra.Command, args []string) {
+		apiToken := os.Getenv("TIMECAMP_API_TOKEN")
+		if apiToken == "" {
+			fmt.Println("Error: Missing TIMECAMP_API_TOKEN environment variable")
+			return
+		}
+
+		url := "https://app.timecamp.com/third_party/api/timer"
+
+		type Payload struct {
+			Action string `json:"action"`
+			TaskID string `json:"task_id"`
+		}
+
+		payloadStruct := Payload{
+			Action: "stop",
+			TaskID: TimerID,
+		}
+
+		payloadJSON, err := json.Marshal(payloadStruct)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		payload := strings.NewReader(string(payloadJSON))
+
+		req, _ := http.NewRequest("POST", url, payload)
+
+		req.Header.Add("Accept", "application/json")
+		req.Header.Add("Content-Type", "application/json")
+		req.Header.Add("Authorization", "Bearer "+apiToken)
+
+		res, _ := http.DefaultClient.Do(req)
+
+		defer res.Body.Close()
+		body, _ := io.ReadAll(res.Body)
+
+		fmt.Println(string(body))
+	},
+}
+
+func init() {
+	timersCmd.AddCommand(timersStopCmd)
+	timersStopCmd.Flags().StringVarP(&TimerID, "id", "i", "", "Timer ID (required)")
+	timersStopCmd.MarkFlagRequired("id")
+}
