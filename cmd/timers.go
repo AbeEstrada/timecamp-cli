@@ -64,14 +64,7 @@ var timersCmd = &cobra.Command{
 
 		for _, timer := range timers {
 			fmt.Printf("Timer ID: %s\n", timer.TimerID)
-			fmt.Printf("User ID: %s\n", timer.UserID)
-			if timer.TaskID != nil {
-				fmt.Printf("Task ID: %s\n", *timer.TaskID)
-			}
 			fmt.Printf("Started At: %s\n", timer.StartedAt)
-			if timer.Name != nil {
-				fmt.Printf("Name: %s\n", *timer.Name)
-			}
 			if len(timers) > 1 {
 				fmt.Println("---")
 			}
