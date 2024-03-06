@@ -19,4 +19,7 @@ TIMECAMP_API_TOKEN=123 go run main.go
 ## Commands
 
 - `entries`
+  - `week`
 - `timer`
+  - `start`
+  - `stop`
