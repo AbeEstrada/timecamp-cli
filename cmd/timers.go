@@ -18,6 +18,10 @@ type Timer struct {
 	Name      *string `json:"name"` // Nullable field
 }
 
+type ErrorMessage struct {
+	Message string `json:"message"`
+}
+
 var timersCmd = &cobra.Command{
 	Use:   "timers",
 	Short: "Get information about running timers",
@@ -39,6 +43,16 @@ var timersCmd = &cobra.Command{
 
 		defer res.Body.Close()
 		body, _ := io.ReadAll(res.Body)
+		if res.StatusCode != http.StatusOK {
+			var errorMessage ErrorMessage
+			err := json.Unmarshal([]byte(body), &errorMessage)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			fmt.Println("Error:", errorMessage.Message)
+			return
+		}
 
 		var timers []Timer
 		err := json.Unmarshal([]byte(body), &timers)

@@ -53,6 +53,16 @@ var timersStopCmd = &cobra.Command{
 
 		defer res.Body.Close()
 		body, _ := io.ReadAll(res.Body)
+		if res.StatusCode != http.StatusOK {
+			var errorMessage ErrorMessage
+			err := json.Unmarshal([]byte(body), &errorMessage)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			fmt.Println("Error:", errorMessage.Message)
+			return
+		}
 
 		fmt.Println(string(body))
 	},
