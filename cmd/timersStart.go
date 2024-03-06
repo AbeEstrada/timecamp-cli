@@ -57,8 +57,8 @@ var startCmd = &cobra.Command{
 			return
 		}
 
-		timerID := parsedData.EntryID
-		fmt.Println("Timer ID:", timerID)
+		entryID := parsedData.EntryID
+		fmt.Println("Entry ID:", entryID)
 	},
 }
 
