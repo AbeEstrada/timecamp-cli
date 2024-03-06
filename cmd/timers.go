@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -62,9 +63,23 @@ var timersCmd = &cobra.Command{
 			return
 		}
 
+		loc, err := time.LoadLocation("Local")
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
 		for _, timer := range timers {
 			fmt.Printf("Timer ID: %s\n", timer.TimerID)
 			fmt.Printf("Started At: %s\n", timer.StartedAt)
+			givenTime, err := time.ParseInLocation("2006-01-02 15:04:05", timer.StartedAt, loc)
+			if err != nil {
+				fmt.Println("Error:", err)
+				return
+			}
+			elapsedTime := time.Since(givenTime)
+			fmt.Println(elapsedTime.Round(time.Second).String())
+
 			if len(timers) > 1 {
 				fmt.Println("---")
 			}
