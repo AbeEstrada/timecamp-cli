@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"sort"
+	"strconv"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -14,17 +14,18 @@ import (
 
 var entriesCmd = &cobra.Command{
 	Use:   "entries",
-	Short: "Get entries for this week",
+	Short: "Get today's entries",
 	Run: func(cmd *cobra.Command, args []string) {
 		apiToken := os.Getenv("TIMECAMP_API_TOKEN")
 		if apiToken == "" {
 			fmt.Println("Error: Missing TIMECAMP_API_TOKEN environment variable")
 			return
 		}
+
 		current := time.Now()
 		year, month, day := current.Date()
 
-		url := fmt.Sprintf("https://app.timecamp.com/third_party/api/logged_time_in_week?day=%d-%02d-%02d", year, month, day)
+		url := fmt.Sprintf("https://app.timecamp.com/third_party/api/entries?from=%d-%02d-%02d&to=%d-%02d-%02d", year, month, day, year, month, day)
 
 		req, _ := http.NewRequest("GET", url, nil)
 
@@ -46,37 +47,41 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		var entries map[string]int64
+		type Response struct {
+			ID               int64  `json:"id"`
+			Duration         string `json:"duration"`
+			UserID           string `json:"user_id"`
+			UserName         string `json:"user_name"`
+			TaskID           string `json:"task_id"`
+			TaskNote         string `json:"task_note"`
+			LastModify       string `json:"last_modify"`
+			Date             string `json:"date"`
+			StartTime        string `json:"start_time"`
+			EndTime          string `json:"end_time"`
+			Locked           string `json:"locked"`
+			Name             string `json:"name"`
+			AddonsExternalID string `json:"addons_external_id"`
+			Billable         int    `json:"billable"`
+			InvoiceID        string `json:"invoiceId"`
+			Color            string `json:"color"`
+			Description      string `json:"description"`
+		}
+
+		var entries []Response
 		err := json.Unmarshal(body, &entries)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
 		}
 
-		type Response struct {
-			Date    string
-			Seconds int64
+		var totalDuration time.Duration
+		for _, entry := range entries {
+			seconds, _ := strconv.ParseInt(entry.Duration, 10, 64)
+			duration := time.Duration(seconds) * time.Second
+			totalDuration += duration
+			fmt.Printf("%d %s %s\n", entry.ID, duration.String(), entry.Name)
 		}
-
-		var entryList []Response
-		for date, seconds := range entries {
-			entryList = append(entryList, Response{Date: date, Seconds: seconds})
-		}
-		sort.Slice(entryList, func(i, j int) bool {
-			return entryList[i].Date < entryList[j].Date
-		})
-
-		for _, entry := range entryList {
-			date, err := time.Parse("2006-01-02", entry.Date)
-			if err != nil {
-				fmt.Printf("Error parsing date: %s\n", err)
-				continue
-			}
-			duration := time.Duration(entry.Seconds) * time.Second
-			formattedTime := duration.String()
-			formattedDate := date.Format("Mon, Jan 2, 2006")
-			fmt.Printf("%s: %s\n", formattedDate, formattedTime)
-		}
+		fmt.Printf("%sTotal: %s%s\n", "\033[1m", totalDuration, "\033[0m")
 	},
 }
 
