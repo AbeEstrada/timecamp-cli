@@ -10,14 +10,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type Timer struct {
-	TimerID   string  `json:"timer_id"`
-	UserID    string  `json:"user_id"`
-	TaskID    *string `json:"task_id"` // Nullable field
-	StartedAt string  `json:"started_at"`
-	Name      *string `json:"name"` // Nullable field
-}
-
 type ErrorMessage struct {
 	Message string `json:"message"`
 }
@@ -54,7 +46,15 @@ var timersCmd = &cobra.Command{
 			return
 		}
 
-		var timers []Timer
+		type Response struct {
+			TimerID   string  `json:"timer_id"`
+			UserID    string  `json:"user_id"`
+			TaskID    *string `json:"task_id"` // Nullable field
+			StartedAt string  `json:"started_at"`
+			Name      *string `json:"name"` // Nullable field
+		}
+
+		var timers []Response
 		err := json.Unmarshal([]byte(body), &timers)
 
 		if err != nil {
