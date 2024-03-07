@@ -9,7 +9,15 @@ import (
 	"sort"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
+)
+
+const (
+	blue    = lipgloss.Color("#8EB8E5")
+	emerald = lipgloss.Color("#23CE6B")
+	gray    = lipgloss.Color("#61707D")
 )
 
 var weekCmd = &cobra.Command{
@@ -67,6 +75,8 @@ var weekCmd = &cobra.Command{
 			return entryList[i].Date < entryList[j].Date
 		})
 
+		var rowsDate []string
+		var rowsDuration []string
 		for _, entry := range entryList {
 			date, err := time.Parse("2006-01-02", entry.Date)
 			if err != nil {
@@ -74,10 +84,34 @@ var weekCmd = &cobra.Command{
 				continue
 			}
 			duration := time.Duration(entry.Seconds) * time.Second
-			formattedTime := duration.String()
-			formattedDate := date.Format("Mon, Jan 2, 2006")
-			fmt.Printf("%s: %s\n", formattedDate, formattedTime)
+			rowsDate = append(rowsDate, date.Format("Mon, 02 Jan"))
+			rowsDuration = append(rowsDuration, duration.String())
 		}
+		re := lipgloss.NewRenderer(os.Stdout)
+		var (
+			HeaderStyle = re.NewStyle().Padding(0, 1).Foreground(blue).Bold(true).Align(lipgloss.Center)
+			CellStyle   = re.NewStyle().Padding(0, 1)
+		)
+		rows := [][]string{
+			rowsDuration,
+		}
+		t := table.New().
+			Border(lipgloss.NormalBorder()).
+			Headers(rowsDate...).
+			Rows(rows...).
+			StyleFunc(func(row, col int) lipgloss.Style {
+				if row == 0 {
+					if rowsDate[col] == current.Format("Mon, 02 Jan") {
+						return HeaderStyle.Copy().Foreground(emerald)
+					}
+					return HeaderStyle
+				}
+				if rows[row-1][col] == "0s" {
+					return CellStyle.Copy().Foreground(gray)
+				}
+				return CellStyle
+			})
+		fmt.Println(t)
 	},
 }
 
