@@ -42,8 +42,9 @@ var weekCmd = &cobra.Command{
 
 		res, _ := http.DefaultClient.Do(req)
 
-		defer res.Body.Close()
 		body, _ := io.ReadAll(res.Body)
+		defer res.Body.Close()
+
 		if res.StatusCode != http.StatusOK {
 			var errorMessage ErrorMessage
 			err := json.Unmarshal([]byte(body), &errorMessage)
