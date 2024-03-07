@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 )
@@ -65,7 +66,21 @@ var timersStopCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(string(body))
+		type Response struct {
+			Elapsed   int    `json:"elapsed"`
+			EntryID   string `json:"entry_id"`
+			EntryTime int    `json:"entry_time"`
+		}
+
+		var entry Response
+		err := json.Unmarshal([]byte(body), &entry)
+		if err != nil {
+			fmt.Println("Error:", err)
+			return
+		}
+
+		elapsed := time.Duration(entry.Elapsed) * time.Second
+		fmt.Printf("Stopped timer: %s\n", elapsed.String())
 	},
 }
 
