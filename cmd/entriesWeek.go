@@ -78,14 +78,18 @@ var weekCmd = &cobra.Command{
 
 		var rowsDate []string
 		var rowsDuration []string
-		for _, entry := range entryList {
+		for i, entry := range entryList {
 			date, err := time.Parse("2006-01-02", entry.Date)
 			if err != nil {
 				fmt.Printf("Error parsing date: %s\n", err)
 				continue
 			}
+			if i == 0 {
+				style := lipgloss.NewStyle().Foreground(blue).Bold(true)
+				fmt.Println(style.Render(date.Format("January 2006")))
+			}
 			duration := time.Duration(entry.Seconds) * time.Second
-			rowsDate = append(rowsDate, date.Format("Mon, 02 Jan"))
+			rowsDate = append(rowsDate, date.Format("Mon 02"))
 			rowsDuration = append(rowsDuration, duration.String())
 		}
 		re := lipgloss.NewRenderer(os.Stdout)
