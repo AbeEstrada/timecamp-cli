@@ -22,7 +22,7 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		current := time.Now()
+		current := time.Now().Local()
 		year, month, day := current.Date()
 
 		url := fmt.Sprintf("https://app.timecamp.com/third_party/api/entries?from=%d-%02d-%02d&to=%d-%02d-%02d", year, month, day, year, month, day)
