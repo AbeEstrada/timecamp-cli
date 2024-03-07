@@ -12,6 +12,8 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var entriesFromFlag string
+
 var entriesCmd = &cobra.Command{
 	Use:   "entries",
 	Short: "Get today's entries",
@@ -22,8 +24,12 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		current := time.Now().Local()
-		year, month, day := current.Date()
+		fromDate, err := time.Parse("2006-01-02", entriesFromFlag)
+		if err != nil {
+			fmt.Println("Error parsing date:", err)
+			return
+		}
+		year, month, day := fromDate.Date()
 
 		url := fmt.Sprintf("https://app.timecamp.com/third_party/api/entries?from=%d-%02d-%02d&to=%d-%02d-%02d", year, month, day, year, month, day)
 
@@ -69,7 +75,7 @@ var entriesCmd = &cobra.Command{
 		}
 
 		var entries []Response
-		err := json.Unmarshal(body, &entries)
+		err = json.Unmarshal(body, &entries)
 		if err != nil {
 			fmt.Println("Error:", err)
 			return
@@ -81,7 +87,7 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(current.Format("Mon, 02 Jan"))
+		fmt.Println(fromDate.Format("Mon, 02 Jan"))
 
 		var totalDuration time.Duration
 		for _, entry := range entries {
@@ -106,5 +112,8 @@ var entriesCmd = &cobra.Command{
 }
 
 func init() {
+	current := time.Now().Local()
+	year, month, day := current.Date()
 	rootCmd.AddCommand(entriesCmd)
+	entriesCmd.Flags().StringVarP(&entriesFromFlag, "from", "", fmt.Sprintf("%d-%02d-%02d", year, month, day), fmt.Sprintf("From date format: %d-%02d-%02d", year, month, day))
 }
