@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/spf13/cobra"
 )
 
@@ -89,8 +90,30 @@ var entriesCmd = &cobra.Command{
 		}
 
 		styledDate := lipgloss.NewStyle().Foreground(blue).Bold(true)
-		fmt.Println(styledDate.Render(fromDate.Format("Monday, 02 January 2006")))
+		fmt.Println(" " + styledDate.Render(fromDate.Format("Monday, January 02, 2006")))
 
+		re := lipgloss.NewRenderer(os.Stdout)
+		var (
+			HeaderStyle = re.NewStyle().Padding(0, 1).Foreground(blue).Bold(true).Align(lipgloss.Center)
+			CellStyle   = re.NewStyle().Padding(0, 1)
+		)
+		t := table.New().
+			Border(lipgloss.NormalBorder()).
+			Headers("Entry ID", "Task", "Duration").
+			StyleFunc(func(row, col int) lipgloss.Style {
+				if row == 0 {
+					return HeaderStyle
+				}
+				switch col {
+				case 1:
+					color := lipgloss.Color(entries[row-1].Color)
+					return CellStyle.Copy().Foreground(color)
+				case 2:
+					return CellStyle.Copy().Bold(true).Align(lipgloss.Right)
+				default:
+					return CellStyle
+				}
+			})
 		var totalDuration time.Duration
 		for _, entry := range entries {
 			seconds, _ := strconv.ParseInt(entry.Duration, 10, 64)
@@ -102,14 +125,18 @@ var entriesCmd = &cobra.Command{
 				}
 				elapsedTime := time.Since(givenTime)
 				totalDuration += elapsedTime.Round(time.Second)
-				fmt.Printf("%d %s %s\n", entry.ID, elapsedTime.Round(time.Second).String(), entry.Name)
+				t.Row(fmt.Sprintf("%d", entry.ID), entry.Name, elapsedTime.Round(time.Second).String())
 			} else {
 				duration := time.Duration(seconds) * time.Second
 				totalDuration += duration
-				fmt.Printf("%d %s %s\n", entry.ID, duration.String(), entry.Name)
+				t.Row(fmt.Sprintf("%d", entry.ID), entry.Name, duration.String())
 			}
 		}
-		fmt.Printf("%sTotal: %s%s\n", "\033[1m", totalDuration, "\033[0m")
+		fmt.Println(t)
+		styledTotal := lipgloss.NewStyle().Bold(true).Align(lipgloss.Right)
+		tableWidth := lipgloss.Width(t.Render()) - 2
+		totalBlock := lipgloss.PlaceHorizontal(tableWidth, lipgloss.Right, styledTotal.Render(fmt.Sprintf("Total %s", totalDuration)))
+		fmt.Println(totalBlock)
 	},
 }
 
