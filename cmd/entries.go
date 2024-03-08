@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/spf13/cobra"
 )
 
@@ -87,7 +88,8 @@ var entriesCmd = &cobra.Command{
 			return
 		}
 
-		fmt.Println(fromDate.Format("Mon, 02 Jan"))
+		styledDate := lipgloss.NewStyle().Foreground(blue).Bold(true)
+		fmt.Println(styledDate.Render(fromDate.Format("Monday, 02 January 2006")))
 
 		var totalDuration time.Duration
 		for _, entry := range entries {
