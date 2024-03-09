@@ -99,7 +99,7 @@ var entriesCmd = &cobra.Command{
 		)
 		t := table.New().
 			Border(lipgloss.NormalBorder()).
-			Headers("Entry ID", "Task", "Duration").
+			Headers("Entry ID", "Task", "From", "To", "Duration").
 			StyleFunc(func(row, col int) lipgloss.Style {
 				if row == 0 {
 					return HeaderStyle
@@ -108,7 +108,7 @@ var entriesCmd = &cobra.Command{
 				case 1:
 					color := lipgloss.Color(entries[row-1].Color)
 					return CellStyle.Copy().Foreground(color)
-				case 2:
+				case 4:
 					return CellStyle.Copy().Bold(true).Align(lipgloss.Right)
 				default:
 					return CellStyle
@@ -117,6 +117,7 @@ var entriesCmd = &cobra.Command{
 		var totalDuration time.Duration
 		for _, entry := range entries {
 			seconds, _ := strconv.ParseInt(entry.Duration, 10, 64)
+			duration := "0s"
 			if seconds == 0 && entry.StartTime == entry.EndTime {
 				givenTime, err := time.ParseInLocation("2006-01-02 15:04:05", entry.Date+" "+entry.StartTime, loc)
 				if err != nil {
@@ -125,12 +126,13 @@ var entriesCmd = &cobra.Command{
 				}
 				elapsedTime := time.Since(givenTime)
 				totalDuration += elapsedTime.Round(time.Second)
-				t.Row(fmt.Sprintf("%d", entry.ID), entry.Name, elapsedTime.Round(time.Second).String())
+				duration = elapsedTime.Round(time.Second).String()
 			} else {
-				duration := time.Duration(seconds) * time.Second
-				totalDuration += duration
-				t.Row(fmt.Sprintf("%d", entry.ID), entry.Name, duration.String())
+				elapsedTime := time.Duration(seconds) * time.Second
+				totalDuration += elapsedTime
+				duration = elapsedTime.String()
 			}
+			t.Row(fmt.Sprintf("%d", entry.ID), entry.Name, entry.StartTime, entry.EndTime, duration)
 		}
 		fmt.Println(t)
 		styledTotal := lipgloss.NewStyle().Bold(true).Align(lipgloss.Right)
