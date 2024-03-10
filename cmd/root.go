@@ -7,8 +7,8 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "tcamp", // TODO: define binary name
-	Short: "Unofficial TimeCamp cli app",
+	Use:   "tica",
+	Short: "TimeCamp third-party cli app",
 }
 
 func Execute() {

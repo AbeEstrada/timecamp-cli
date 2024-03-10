@@ -1,6 +1,6 @@
-# TimeCamp CLI
+# TimeCamp third party cli app
 
-An unofficial TimeCamp cli app
+If you like me, don't want to install any of the official TimeCamp apps, or use their website, here is an alternative for you.
 
 ## API
 
