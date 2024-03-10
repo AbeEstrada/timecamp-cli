@@ -25,3 +25,9 @@ TIMECAMP_API_TOKEN=123 go run main.go
 - `timers`
 - `timers start`
 - `timers stop`
+
+## Build
+
+```sh
+go build -ldflags "-s -w" -o tica
+```
